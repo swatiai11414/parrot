@@ -13,7 +13,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y qemu-kvm curl unzip jq
+        sudo apt-get install -y qemu-kvm curl unzip
 
     - name: Download and install ngrok
       run: |
@@ -26,17 +26,14 @@ jobs:
 
     - name: Run Docker container with QEMU
       run: |
-        docker run -d --name qemu-container -e "BOOT=https://bunny.deb.parrot.sh/parrot/iso/6.1/Parrot-security-6.1_amd64.iso" -p 8006:8006 --device=/dev/kvm --cap-add NET_ADMIN qemux/qemu-docker
+        docker run -d --name qemu-container -e "BOOT=https://bunny.deb.parrot.sh//parrot/iso/6.1/Parrot-security-6.1_amd64.iso" -p 8006:8006 --device=/dev/kvm --cap-add NET_ADMIN qemux/qemu-docker
 
     - name: Start ngrok
       run: ngrok http 8006 &
 
     - name: Get ngrok URL
       id: ngrok
-      run: |
-        sleep 10
-        NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels | jq -r .tunnels[0].public_url)
-        echo "NGROK_URL=$NGROK_URL" >> $GITHUB_ENV
+      run: sleep 10 && curl -s http://127.0.0.1:4040/api/tunnels | jq -r .tunnels[0].public_url
 
     - name: Display ngrok URL
-      run: echo "Ngrok URL: ${{ env.NGROK_URL }}"
+      run: echo "Ngrok URL: ${{ steps.ngrok.outputs.ngrok_url }}"
